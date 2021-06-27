@@ -1,8 +1,8 @@
 {%- assign device = site.data.devices[page.device] -%}
-{% if device.custom_recovery_codename %}
-{% assign custom_recovery_codename = device.custom_recovery_codename %}
+{% if device.custom_recovery_link %}
+{% assign custom_recovery_link = device.custom_recovery_link %}
 {% else %}
-{% assign custom_recovery_codename = device.codename %}
+{% assign custom_recovery_link = "https://dl.twrp.me/" | append: device.codename %}
 {% endif %}
 
 ## Preparing for installation
@@ -48,15 +48,11 @@ heimdall print-pit
 
 ## Installing a custom recovery using `heimdall`
 
-{% if device.custom_recovery_link %}
-1. Download a custom recovery - you can download one [here]({{ device.custom_recovery_link }}).
-{% else %}
-{% if device.uses_twrp %}
-1. Download a custom recovery - you can download [TWRP](https://dl.twrp.me/{{ custom_recovery_codename }}). Simply download the latest recovery file, named something like `twrp-x.x.x-x-{{ custom_recovery_codename }}.img`.
+{% if device.uses_custom_recovery %}
+1. Download the [custom recovery]({{ custom_recovery_link }}).
 {% include alerts/tip.html content="Ensure you download the `.img` file and not the `.tar` or `.tar.md5` versions." %}
 {% else %}
-1. Download a custom recovery - you can download [Lineage Recovery](https://download.lineageos.org/{{ custom_recovery_codename }}). Simply download the latest recovery file, named something like `lineage-{{ device.current_branch }}-{{ site.time | date: "%Y%m%d" }}-recovery-{{ custom_recovery_codename }}.img`
-{% endif %}
+1. Download the [Kraken Recovery](https://download.aospk.org/{{ device.codename }}). Simply download the latest recovery file.
 {% endif %}
 2. Power off the device, and boot it into download mode:
     * {{ device.download_boot }}

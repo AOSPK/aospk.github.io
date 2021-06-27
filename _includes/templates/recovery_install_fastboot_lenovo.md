@@ -4,25 +4,17 @@
 
 {% include alerts/note.html content="The steps below only need to be run once per device." %}
 {% include alerts/warning.html content="Unlocking the bootloader will erase all data on your device!
-Before proceeding, ensure the data you would like to retain is backed up to your PC and/or your Google account, or equivalent. Please note that OEM backup solutions like Samsung and Motorola backup may not be accessible from LineageOS once installed." %}
+Before proceeding, ensure the data you would like to retain is backed up to your PC and/or your Google account, or equivalent. Please note that OEM backup solutions like Samsung and Motorola backup may not be accessible from Kraken once installed." %}
 
-{% if device.install_variant and device.install_variant contains "lenovo_unlock_url" %}
-1. Visit [Lenovo's ZUI official unlocking website](https://www.zui.com/iunlock), where you'll be asked to fill in some device and contact information.
-2. Follow the instructions and get your unlock file.
 {% unless device.no_oem_unlock_switch %}
-3. Enable OEM unlock in the Developer options under device Settings, if present.
+1. Enable OEM unlock in the Developer options under device Settings, if present.
+2. Accept the terms that you understand that you're voiding your warranty by choosing to unlock your bootloader.
+3. Login with your Lenovo account (if you already have one) or create a new one.
+4. A 14 days countdown timer will start. This is specific per device.
+5. After the waiting period, go back to OEM unlocking so that the Lenovo servers can toggle the bootloader unlock switch.
 {% endunless %}
-{% else %}
-{% unless device.no_oem_unlock_switch %}
-4. Enable OEM unlock in the Developer options under device Settings, if present.
-5. Accept the terms that you understand that you're voiding your warranty by choosing to unlock your bootloader.
-6. Login with your Lenovo account (if you already have one) or create a new one.
-7. A 14 days countdown timer will start. This is specific per device.
-8. After the waiting period, go back to OEM unlocking so that the Lenovo servers can toggle the bootloader unlock switch.
-{% endunless %}
-{% endif %}
-9. Connect the device to your PC via USB.
-10. On the computer, open a command prompt (on Windows) or terminal (on Linux or macOS) window, and type:
+6. Connect the device to your PC via USB.
+7. On the computer, open a command prompt (on Windows) or terminal (on Linux or macOS) window, and type:
 ```
 adb reboot bootloader
 ```
@@ -31,35 +23,12 @@ adb reboot bootloader
 
     * {{ device.download_boot }}
     {% endif %}
-11. Once the device is in fastboot mode, verify your PC finds it by typing:
+8. Once the device is in fastboot mode, verify your PC finds it by typing:
 ```
 fastboot devices
 ```
     {% include alerts/tip.html content="If you see `no permissions fastboot` while on Linux or macOS, try running `fastboot` as root." %}
-12. Now type the following command to unlock the bootloader:
-
-{% if device.install_variant and device.install_variant contains "lenovo_unlock_url" %}
-    ```
-    fastboot flash unlock sn.img
-    ```
-    Where `sn.img` is the bootloader unlock file you received in the email.
-13. Next, use your second unlock command
-{% if device.custom_unlock_cmd %}
-    ```
-{{ device.custom_unlock_cmd }}
-    ```
-{% else %}
-    ```
-fastboot oem unlock
-    ```
-{% endif %}
-
-14. Wait for the bootloader unlocking process to complete. Once finished, you can check if bootloader is successfully unlocked by typing:
-```
-fastboot getvar unlocked
-```
-    Verify that the response is `unlocked: yes`. In that case, you can now install third-party firmware.
-{% else %}
+9. Now type the following command to unlock the bootloader:
 
 {% if device.custom_unlock_cmd %}
     ```
@@ -70,10 +39,9 @@ fastboot getvar unlocked
 fastboot oem unlock
     ```
 {% endif %}
-{% endif %}
 
-15. If the device doesn't automatically reboot, reboot it. It should now be unlocked.
-16. Since the device resets completely, you will need to re-enable USB debugging to continue.
+10. If the device doesn't automatically reboot, reboot it. It should now be unlocked.
+11. Since the device resets completely, you will need to re-enable USB debugging to continue.
 
 {% if device.before_recovery_install %}
 {% capture path %}templates/device_specific/{{ device.before_recovery_install }}.md{% endcapture %}

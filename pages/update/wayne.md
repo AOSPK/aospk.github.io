@@ -1,8 +1,8 @@
 ---
 sidebar: home_sidebar
-title: Update LineageOS on wayne
+title: Update PixelExperience on wayne
 folder: update
-permalink: /devices/wayne/update
+permalink: /devices/wayne/update/
 device: wayne
 ---
 {% include templates/device_update.md %}

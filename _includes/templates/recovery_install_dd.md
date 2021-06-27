@@ -1,8 +1,8 @@
 {%- assign device = site.data.devices[page.device] -%}
-{% if device.custom_recovery_codename %}
-{% assign custom_recovery_codename = device.custom_recovery_codename %}
+{% if device.custom_recovery_link %}
+{% assign custom_recovery_link = device.custom_recovery_link %}
 {% else %}
-{% assign custom_recovery_codename = device.codename %}
+{% assign custom_recovery_link = "https://dl.twrp.me/" | append: device.codename %}
 {% endif %}
 
 ## Rooting your device
@@ -28,14 +28,10 @@
 
 ## Installing a custom recovery using `dd`
 
-{% if device.custom_recovery_link %}
-1. Download a custom recovery - you can download one [here]({{ device.custom_recovery_link }}).
+{% if device.uses_custom_recovery %}
+1. Download the [custom recovery]({{ custom_recovery_link }}).
 {% else %}
-{% if device.uses_twrp %}
-1. Download a custom recovery - you can download [TWRP](https://dl.twrp.me/{{ custom_recovery_codename }}). Simply download the latest recovery file, named something like `twrp-x.x.x-x-{{ custom_recovery_codename }}.img`.
-{% else %}
-1. Download a custom recovery - you can download [Lineage Recovery](https://download.lineageos.org/{{ custom_recovery_codename }}). Simply download the latest recovery file, named something like `lineage-{{ device.current_branch }}-{{ site.time | date: "%Y%m%d" }}-recovery-{{ custom_recovery_codename }}.img`.
-{% endif %}
+1. Download the [Kraken Recovery](https://download.aospk.org/{{ device.codename }}). Simply download the latest recovery file.
 {% endif %}
 2. Place the recovery image file on the root of `/sdcard`:
    * Using adb: `adb push <recovery_filename>.img /sdcard/<recovery_filename>.img`

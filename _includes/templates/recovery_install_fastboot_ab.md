@@ -1,20 +1,20 @@
 {%- assign device = site.data.devices[page.device] -%}
-{% if device.custom_recovery_codename %}
-{% assign custom_recovery_codename = device.custom_recovery_codename %}
-{% else %}
-{% assign custom_recovery_codename = device.codename %}
-{% endif %}
-
-## Temporarily booting a custom recovery using `fastboot`
-
 {% if device.custom_recovery_link %}
-1. Download a custom recovery - you can download one [here]({{ device.custom_recovery_link }}).
+{% assign custom_recovery_link = device.custom_recovery_link %}
 {% else %}
-{% if device.uses_twrp %}
-1. Download a custom recovery - you can download [TWRP](https://dl.twrp.me/{{ custom_recovery_codename }}). Simply download the latest recovery file, named something like `twrp-x.x.x-x-{{ custom_recovery_codename }}.img`.
-{% else %}
-1. Download a custom recovery - you can download [Lineage Recovery](https://download.lineageos.org/{{ custom_recovery_codename }}). Simply download the latest recovery file, named something like `lineage-{{ device.current_branch }}-{{ site.time | date: "%Y%m%d" }}-recovery-{{ custom_recovery_codename }}.img`.
+{% assign custom_recovery_link = "https://dl.twrp.me/" | append: device.codename %}
 {% endif %}
+
+{% if device.has_recovery_partition %}
+## Booting a custom recovery using `fastboot`
+{% else %}
+## Temporarily booting a custom recovery using `fastboot`
+{% endif %}
+
+{% if device.uses_custom_recovery %}
+1. Download the [custom recovery]({{ custom_recovery_link }}).
+{% else %}
+1. Download the [Kraken Recovery](https://download.aospk.org/{{ device.codename }}). Simply download the latest recovery file.
 {% endif %}
 2. Connect your device to your PC via USB.
 3. On the computer, open a command prompt (on Windows) or terminal (on Linux or macOS) window, and type:
@@ -32,17 +32,22 @@ fastboot devices
 ```
     {% include alerts/tip.html content="If you see `no permissions fastboot` while on Linux or macOS, try running `fastboot` as root." %}
     {% include alerts/tip.html content="Some devices have buggy USB support while in bootloader mode, if you see `fastboot` hanging with no output when using commands such as `fastboot getvar .. `, `fastboot boot ...`, `fastboot flash ...` you may want to try a different USB port (preferably a USB Type-A 2.0 one) or a USB hub." %}
-
+{% if device.has_recovery_partition %}
+5. Flash the recovery on your device by typing:
+```
+fastboot flash recovery <recovery_filename>.img
+```
+{% else %}
 5. Temporarily flash a recovery on your device by typing:
 ```
 fastboot flash boot <recovery_filename>.img
 ```
     {% include alerts/note.html content="Outdated fastboot releases dropped legacy A/B support, so it might attempt to flash to `boot__a` / `boot__b` rather than `boot_a` / `boot_b` if you try to flash `boot`. In this case, you must update `fastboot` to a release newer than or equal to `31.0.2`. Alternatively, you can manually specify which slot to flash to based on what slot fastboot failed to flash to. For example, if fastboot fails to flash to `boot__a`, you must flash to `boot_a`." %}
     {% include alerts/tip.html content="The file may not be named identically to what stands in this command, so adjust accordingly." %}
-6. {{ device.recovery_boot }}
+{% endif %}
 
 {% unless site.data.devices[page.device].no_fastboot_boot %}
-{% if device.uses_twrp %}
+{% if device.uses_custom_recovery %}
     Alternatively, on some devices and recoveries you can use fastboot to boot directly into the freshly flashed or any other desired recovery:
 ```
 fastboot boot <recovery_filename>.img

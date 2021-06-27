@@ -1,8 +1,8 @@
 ---
 sidebar: home_sidebar
-title: Upgrade LineageOS on wayne
+title: Upgrade PixelExperience on wayne
 folder: upgrade
-permalink: /devices/wayne/upgrade
+permalink: /devices/wayne/upgrade/
 device: wayne
 ---
 {% include templates/device_upgrade.md %}

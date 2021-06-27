@@ -1,8 +1,8 @@
 ---
 sidebar: home_sidebar
-title: Upgrade LineageOS on ginkgo
+title: Upgrade PixelExperience on ginkgo
 folder: upgrade
-permalink: /devices/ginkgo/upgrade
+permalink: /devices/ginkgo/upgrade/
 device: ginkgo
 ---
 {% include templates/device_upgrade.md %}

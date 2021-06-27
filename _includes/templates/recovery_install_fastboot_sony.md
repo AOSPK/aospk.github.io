@@ -1,11 +1,16 @@
 {%- assign device = site.data.devices[page.device] -%}
+{% if device.custom_recovery_link %}
+{% assign custom_recovery_link = device.custom_recovery_link %}
+{% else %}
+{% assign custom_recovery_link = "https://dl.twrp.me/" | append: device.codename %}
+{% endif %}
 
 ## Unlocking the bootloader
 
 {% include alerts/note.html content="The steps below only need to be run once per device." %}
 {% include alerts/warning.html content="Unlocking the bootloader will erase all data on your device!
 This also includes your DRM keys, which are stored in the Trim Area partition (also called TA).
-Before proceeding, ensure the data you would like to retain is backed up to your PC and/or your Google account, or equivalent. Please note that OEM backup solutions like Samsung and Motorola backup may not be accessible from LineageOS once installed.
+Before proceeding, ensure the data you would like to retain is backed up to your PC and/or your Google account, or equivalent. Please note that OEM backup solutions like Samsung and Motorola backup may not be accessible from Kraken once installed.
 If you wish to backup the TA partition first, you can find tutorials related to your device on the internet." %}
 
 {% if device.install_variant and device.install_variant contains "sony_unlock_contacts" %}
@@ -42,22 +47,13 @@ fastboot oem unlock <your_unlock_code>
 
 {% if device.install_variant and device.install_variant contains "sony_init_fota" %}
 
-{% if device.custom_recovery_codename %}
-{% assign custom_recovery_codename = device.custom_recovery_codename %}
-{% else %}
-{% assign custom_recovery_codename = device.codename %}
-{% endif %}
 
 ## Installing a custom recovery using `fastboot`
 
-{% if device.custom_recovery_link %}
-1. Download a custom recovery - you can download one [here]({{ device.custom_recovery_link }}).
+{% if device.uses_custom_recovery %}
+1. Download the [custom recovery]({{ custom_recovery_link }}).
 {% else %}
-{% if device.uses_twrp %}
-1. Download a custom recovery - you can download [TWRP](https://dl.twrp.me/{{ custom_recovery_codename }}). Simply download the latest recovery file, named something like `twrp-x.x.x-x-{{ custom_recovery_codename }}.img`.
-{% else %}
-1. Download a custom recovery - you can download [Lineage Recovery](https://download.lineageos.org/{{ custom_recovery_codename }}). Simply download the latest recovery file, named something like `lineage-{{ device.current_branch }}-{{ site.time | date: "%Y%m%d" }}-recovery-{{ custom_recovery_codename }}.img`.
-{% endif %}
+1. Download the [Kraken Recovery](https://download.aospk.org/{{ device.codename }}). Simply download the latest recovery file.
 {% endif %}
 2. Connect your device to your PC via USB.
 3. On the computer, open a command prompt (on Windows) or terminal (on Linux or macOS) window, and type:
@@ -74,26 +70,33 @@ adb reboot bootloader
 fastboot devices
 ```
     {% include alerts/tip.html content="If you see `no permissions fastboot` while on Linux or macOS, try running `fastboot` as root." %}
-5. Temporarily flash TWRP to `boot`:
+{% if device.has_recovery_partition %}
+5. Flash the custom recovery to `recovery` partition:
 ```
-fastboot flash boot twrp-x.x.x-x-{{ custom_recovery_codename }}.img
+fastboot flash recovery path-to-recovery-file.img
 ```
+{% else %}
+5. Temporarily flash the custom recovery to `boot`:
+```
+fastboot flash boot path-to-recovery-file.img
+```
+{% endif %}
     {% include alerts/tip.html content="The file may not be named identically to what stands in this command, so adjust accordingly. Remember to adjust the filename in the following commands as well." %}
-6. Reboot to the TWRP recovery:
+6. Reboot to the custom recovery:
 ```
 fastboot reboot
 ```
-7. Push the TWRP image to your device:
+7. Push the custom recovery image to your device:
 ```
-adb push twrp-x.x.x-x-{{ custom_recovery_codename }}.img /sdcard
+adb push path-to-recovery-file.img /sdcard
 ```
 8. Enter shell on the device:
 ```
 adb shell
 ```
-9. Flash TWRP to `recovery` permanently:
+9. Flash custom recovery to `recovery` permanently:
 ```
-dd if=/sdcard/twrp-x.x.x-x-{{ custom_recovery_codename }}.img of=/dev/block/platform/msm_sdcc.1/by-name/FOTAKernel
+dd if=/sdcard/path-to-recovery-file.img of=/dev/block/platform/msm_sdcc.1/by-name/FOTAKernel
 ```
 10. Exit the adb shell:
 ```
@@ -101,7 +104,7 @@ exit
 ```
 {% else %}
 
-{% if device.is_ab_device and device.has_recovery_partition != true %}
+{% if device.is_ab_device %}
 {% include templates/recovery_install_fastboot_ab.md %}
 {% else %}
 {% include templates/recovery_install_fastboot_generic.md %}

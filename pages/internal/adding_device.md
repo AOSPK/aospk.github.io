@@ -1,29 +1,29 @@
 ---
 sidebar: home_sidebar
-title: How to add a new device to the wiki
+title: How to submit a new device for official builds
 folder: internal
-permalink: addingdevice-howto.html
+permalink: help/adding-device/
 search: exclude
 tags:
  - internal
 ---
 
-## Requirements for adding a device
+## Official devices
 
-The LineageOS wiki provides instructions based on the assumption that your device has got its device tree/kernel
-under the [LineageOS GitHub organization](https://github.com/LineageOS), and that it supports building Lineage 13.0 or higher. If your device meets
-both those requirements, follow the instructions below to get your device set up.
+If you have a working device tree/kernel, and would like to submit it for official builds, please check [this url](https://github.com/AOSPK/official_devices/blob/master/README.md) for more instructions. Please note - your device **must** have full hardware support (i.e., every peripheral works) and **must** be stable.
+
+The Kraken wiki provides instructions based on the assumption that your device has got its device tree and required depedencies under the [AOSPK-Devices GitHub organization](https://github.com/AOSPK-Devices).
 
 ## Setting up the wiki locally
 
-See [contributing using repo](contributing.html#using-repo) for detailed instructions on setting up the wiki locally.
+See [this url]({{ site.baseurl }}/help/contributing/wiki/) for detailed instructions on setting up the wiki locally.
 
 ## Adding your device
 
 ### Prepare the required files
 
 There are a few files which need to be there to have a device on the wiki.
-In order to get them, navigate to `$LINEAGE_SRC/lineage/wiki/` and run:
+In order to get them, navigate to `~/wiki/` and run:
 
 ```
 ./scripts/generate_device.sh your_device
@@ -33,7 +33,7 @@ Obviously replace `your_device` with the codename of your device
 
 ### Populating the YAML
 
-The sample template has been copied to `$LINEAGE_SRC/lineage/wiki/_data/devices/your_device.yml`.
+The sample template has been copied to `~/wiki/_data/devices/your_device.yml`.
 Update the values to match your device. An explanation of some of the options is below:
 
 {% assign definitions = site.data.schema.definitions %}
@@ -81,9 +81,7 @@ For `tech` you can use:
 
 
 * `download_boot`: Instructions for booting the device into the mode used to install recovery. On most devices, this is fastboot mode.
-* `image`: The image located under `images/devices/` to use for this device. Instructions on adding an image are below.
 * `install_method`: Used to determine the recovery install template to use. Templates can be found in \_includes/templates/recovery\_install\_`install_method`.md.
-* `kernel`: The repo name of the kernel - for example, `android_kernel_oneplus_msm8974`.
 * `network`: The frequencies and channels for the various network technologies. You can look them up [here](https://www.frequencycheck.com/models/). Keep the non-available technologies empty.
 * `peripherals`: A list of peripherals available on the device, can be any of the following list:
 
@@ -100,33 +98,24 @@ For `tech` you can use:
   - Model3: 2016-02-01
   ```
 
-* `tree`: The repo name of the device tree - for example, `android_device_oneplus_bacon`.
-* `vendor_short`: The vendor name used for the device tree - for example, `oneplus`.
-
 
 Additionally there are some optional properties which you might not need, but in case you do, they are documented below:
 
 * `carrier`: If the device was released for a specific carrier, the name of that carrier. Remove this if not used!
 * `custom_recovery_link`: A custom recovery link in case no official recovery exists for the specific device or it doesn't work properly. Remove this if not used!
-* `custom_recovery_codename`: If an official recovery exists for the device, but it uses a different codename, specify the used one here. Remove this if not used!
 * `custom_unlock_cmd`: Used if the command to unlock your device via fastboot is different than `fastboot oem unlock`. Remove this if not used!
-* `format_on_upgrade`: Used if the device needs to wiped on major LineageOS version due to unfixable device specific issues. Remove if not used!
+* `format_on_upgrade`: Used if the device needs to wiped on major Kraken version due to unfixable device specific issues. Remove if not used!
 * `is_ab_device`: Used if the device has an A/B partition scheme. Remove this if not applicable to your device!
 * `is_unlockable`: Set to false if there is no official method to unlock the bootloader. A hint will appear on the device's overview and install page. If this property is not set, it defaults to `True`
-* `required_bootloader`: Specify the bootloader versions which are required to install LineageOS. If no special requirement exists, remove this line! Example:
+* `required_bootloader`: Specify the bootloader versions which are required to install Kraken. If no special requirement exists, remove this line! Example:
 
   ```
   required_bootloader: [Version1, Version2]
   ```
 
-* `uses_twrp`: Used if the device doesn't use Lineage Recovery (the default)
+* `uses_custom_recovery`: Used if the device use custom recovery (disabled by default)
 
 {% include alerts/note.html content="If you need to assign a value to one of the fields which is not allowed by the time you create your change, update the schema validator or contact us to add it" %}
-
-### Adding the device's image
-
-Find a reasonably high-quality image of your device, and add it to `images/devices/<image>.png`. The filename must match the
-entry in your YAML file. Also make sure the background of the image is transparent.
 
 ## Testing it works
 
@@ -142,6 +131,6 @@ ruby ./test/validate.rb
 
 If the script doesn't give you an output, all the validated fields have a proper format. Otherwise, read the messages carefully to see which fields have to be corrected.
 
-## Submitting your device
+## Submitting wiki changes
 
-After verifying the device-specific pages, commit and upload your changes to Gerrit, and add the "Wiki Editors" group as reviewers.
+After verifying the device-specific pages, commit it and open a pull request at [wiki source code](https://github.com/AOSPK/site/) to review proposed changes.

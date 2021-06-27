@@ -1,8 +1,8 @@
 ---
 sidebar: home_sidebar
-title: Upgrade LineageOS on {codename}
+title: Upgrade Kraken on {codename}
 folder: upgrade
-permalink: /devices/{codename}/upgrade
+permalink: /devices/{codename}/upgrade/
 device: {codename}
 ---
 {% include templates/device_upgrade.md %}

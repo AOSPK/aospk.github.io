@@ -10,9 +10,10 @@
       {% if jekyll.environment == "development" or jekyll.environment == "production" %}
       <td colspan="2"><img src="{{ "images/devices/" | append: device.image | relative_url }}" /></td>
       {% else %}
-      <td colspan="2"><img src="{{ "https://raw.githubusercontent.com/LineageOS/lineage_wiki/" | append: jekyll.environment | append: "/images/devices/" | append: device.image }}"/></td>
+      <td colspan="2"><img src="{{ "https://raw.githubusercontent.com/AOSPK/www/" | append: jekyll.environment | append: "/images/devices/" | append: device.image }}"/></td>
       {% endif %}
     </tr>
+
 
     <tr>
       <th scope="row">Released</th>
@@ -186,15 +187,19 @@
         <th scope="row">Battery</td>
         <td>
             {% if device.battery.first.size == 1 -%}
+            <ul>
             {%- comment %}The size of "first" will be 1 when there is a list of models{% endcomment -%}
                 {% for model in device.battery -%}
+                <li>
                     {%- assign modelname = model.first[0] %}
                     {%- assign battery_data = model.first[1] %}
                     {% include snippets/battery.html %}
                     {%- unless forloop.last -%}
                     <br/>
                     {%- endunless %}
+                </li>
                 {% endfor -%}
+            </ul>
             {%- else %}
                 {%- assign battery_data = device.battery %}
                 {% include snippets/battery.html %}
@@ -202,21 +207,6 @@
         </td>
     </tr>
     {%- endif %}
-    <!-- lineage info -->
-    {% if device.maintainers != empty %}
-    <tr>
-        <th scope="row" colspan="2">LineageOS info</td>
-    </tr>
-    <tr>
-        <th scope="row">Maintainers</td>
-        <td>
-            <ul>
-                {% for el in device.maintainers %}
-                    <li>{{ el }}</li>
-                {% endfor %}
-            </ul>
-        </td>
-    </tr>
     {% if device.models %}
     <tr>
         <th scope="row">Supported models</td>
@@ -229,6 +219,20 @@
         </td>
     </tr>
     {% endif %}
+    {% if device.maintainers != empty %}
+    <tr>
+        <th scope="row" colspan="2">Kraken info</td>
+    </tr>
+    <tr>
+        <th scope="row">Maintainers</td>
+        <td>
+            <ul>
+                {% for el in device.maintainers %}
+                    <li>{{ el }}</li>
+                {% endfor %}
+            </ul>
+        </td>
+    </tr>
     <tr>
         <th scope="row">Supported versions</td>
         <td>

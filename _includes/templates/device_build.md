@@ -4,8 +4,8 @@
 ## Introduction
 
 These instructions will hopefully assist you to start with a stock {{ device.vendor }} {{ device.name }}, unlock the bootloader (if necessary), and then download
-the required tools as well as the very latest source code for LineageOS (based on Google’s Android operating system) for your device. Using these, you can build both
-a LineageOS installation zip and a LineageOS Recovery image and install them on your device.
+the required tools as well as the very latest source code for Kraken (based on Google’s Android operating system) for your device. Using these, you can build both
+a Kraken installation zip and a Kraken Recovery image and install them on your device.
 
 It is difficult to say how much experience is necessary to follow these instructions. While this guide is certainly not for the extremely uninitiated,
 these steps shouldn’t require a PhD in software development either. Some readers will have no difficulty and breeze through the steps easily.
@@ -17,62 +17,179 @@ And once you’re an Android-building ninja, there will be no more need to wait 
 build a full operating system from code and install it to a running device, whenever you want. Where you go from there-- maybe you’ll add a feature, fix a bug, add a translation,
 or use what you’ve learned to build a new app or port to a new device-- or maybe you’ll never build again-- it’s all really up to you.
 
+### What you'll need
 
-{% include templates/device_build_before_init.md %}
+* A {{ device.vendor }} {{ device.name }}.
+* A relatively recent 64-bit computer (Linux, macOS, or Windows) with a reasonable amount of RAM and about 200 GB of free storage (more if you enable `ccache`
+ or build for multiple devices). The less RAM you have, the longer the build will take. Aim for 16 GB RAM or more, enabling ZRAM can be helpful. Using SSDs results in considerably faster
+ build times than traditional hard drives.
+* A USB cable compatible with the {{ device.vendor }} {{device.name}}.
+* A decent internet connection and reliable electricity. :)
+* Some familiarity with basic Android operation and terminology. It would help if you've installed custom roms on other devices and are familiar with recovery.
+ It may also be useful to know some basic command line concepts such as `cd`, which stands for “change directory”, the concept of directory hierarchies, and that in Linux they are separated by /, etc.
+
+{% include alerts/tip.html content="If you are not accustomed to using Linux, this is an excellent chance to learn. It’s free -- just download and run a virtual machine (VM) such as
+[VirtualBox](https://www.virtualbox.org), then install a Linux distribution such as [Ubuntu](https://www.ubuntu.com) ([AOSP vets Ubuntu as well](https://source.android.com/source/initializing.html)).
+Any recent 64-bit version should work great, but the latest Long Term Support (LTS) version is recommended. There are plenty of instructions on setting up VirtualBox to run Ubuntu, so we'll leave that to you." %}
+
+Let's begin!
+
+## Build Kraken and Kraken Recovery
+
+{% include alerts/note.html content="You only need to do these steps once. If you have already prepared your build environment and downloaded the source code,
+skip to [Prepare the device-specific code](#prepare-the-device-specific-code)" %}
+
+### Install the platform-tools
+
+If you haven't previously installed `adb` and `fastboot`, you can [download them from Google](https://dl.google.com/android/repository/platform-tools-latest-linux.zip).
+Extract it running:
+
+```
+unzip platform-tools-latest-linux.zip -d ~
+```
+
+{% include alerts/tip.html content="The file may not be named identically to what stands in this command, so adjust accordingly." %}
+
+Now you have to add `adb` and `fastboot` to your PATH. Open `~/.profile` and add the following:
+
+```
+# add Android SDK platform tools to path
+if [ -d "$HOME/platform-tools" ] ; then
+    PATH="$HOME/platform-tools:$PATH"
+fi
+```
+
+Then, run `source ~/.profile` to update your environment.
+
+### Preparing your system to build
+
+{% include alerts/tip.html content="This guide assumes that you have Ubuntu 18 (or higher) installed." %}
+
+Installing git:
+
+```
+sudo apt install git
+```
+
+Running configuration script:
+```
+cd ~/
+git clone https://github.com/akhilnarang/scripts
+cd scripts
+./setup/android_build_env.sh
+```
+
+### Create the directories
+
+You'll need to set up some directories in your build environment.
+
+To create them:
+
+```
+mkdir -p ~/bin
+mkdir -p ~/android/kraken
+```
+
+The `~/bin` directory will contain the git-repo tool (commonly named "repo") and the `~/android/kraken` directory will contain the source code of Kraken.
+
+### Install the `repo` command
+
+Enter the following to download the `repo` binary and make it executable (runnable):
+
+```
+curl https://storage.googleapis.com/git-repo-downloads/repo > ~/bin/repo
+chmod a+x ~/bin/repo
+```
+
+### Put the `~/bin` directory in your path of execution
+
+In recent versions of Ubuntu, `~/bin` should already be in your PATH. You can check this by opening `~/.profile` with a text editor and verifying the following code exists (add it if it is missing):
+
+```
+# set PATH so it includes user's private bin if it exists
+if [ -d "$HOME/bin" ] ; then
+    PATH="$HOME/bin:$PATH"
+fi
+```
+
+Then, run `source ~/.profile` to update your environment.
 
 
-### Initialize the LineageOS source repository
+### Configure git
+Given that `repo` requires you to identify yourself to sync Android, run the following commands to configure your `git` identity:
+```
+git config --global user.email "you@example.com"
+git config --global user.name "Your Name"
+```
 
-{% if device.maintainers != empty %}
-The following branches are officially supported for the {{ device.vendor }} {{ device.name }}:
-{% else %}
+### Initialize the Kraken source repository
+
 The following branches can be used to build for the {{ device.vendor }} {{ device.name }}:
-{% endif %}
 
 {% for version in device.versions %}
-{% if version < 15 %}
-* cm-{{ version }}
-{% else %}
-* lineage-{{ version }}
-{% endif %}
+* {{ version | replace: "_", "-" }}
 {% endfor %}
 
-{% assign current_branch = device.current_branch %}
-{% include templates/device_build_init_sync.md %}
+Enter the following to initialize the repository:
+
+{% include alerts/note.html content="Make sure the branch you enter here is the one you wish to build!" %}
+
+```
+cd ~/android/kraken
+repo init -u https://github.com/AOSPK/manifest -b branch_name
+```
+
+### Download the source code
+
+To start the download of the source code to your computer, type the following:
+
+```
+repo sync -j$(nproc --all) -c -j$(nproc --all) --force-sync --no-clone-bundle --no-tags
+```
+
+{% include alerts/note.html content="This may take a while, depending on your internet speed. Go and have a beer/coffee/tea/nap in the meantime!" %}
+
+{% include alerts/tip.html content="The `repo sync` command is used to update the latest source code from Kraken. Remember it, as you may want to
+do it every few days to keep your code base fresh and up-to-date." %}
 
 ### Prepare the device-specific code
 
-After the source downloads, ensure you're in the root of the source code (`cd ~/android/lineage`), then type:
+After the source downloads, ensure you're in the root of the source code (`cd ~/android/kraken`), then type:
 
 ```
 source build/envsetup.sh
-breakfast {{ device.codename }}
+lunch aosp_{{ device.codename }}-userdebug
 ```
 
-This will download your device's [device specific configuration](https://github.com/LineageOS/{{ device.tree }}) and
-[kernel](https://github.com/LineageOS/{{ device.kernel }}).
+This will download your device's necessary dependencies.
 
-{% include alerts/important.html content="Some devices require a vendor directory to be populated before breakfast will succeed. If you receive an error here about vendor
-makefiles, jump down to [_Extract proprietary blobs_](#extract-proprietary-blobs). The first portion of breakfast should have succeeded, and after completing you can [rerun
-`breakfast`](#prepare-the-device-specific-code)" %}
+### Turn on caching to speed up build
 
-### Extract proprietary blobs
-
-{% capture extracting_blobs_from_zips %}
-This step requires to have a device already running the latest LineageOS, based on the branch you wish to build for. If you don't have access to such device, refer to [Extracting proprietary blobs from installable zip]({{ "extracting_blobs_from_zips.html" | relative_url }}).
-{% endcapture %}
-{% include alerts/note.html content=extracting_blobs_from_zips %}
-
-Now ensure your {{ device.name }} is connected to your computer via the USB cable, with ADB and root enabled, and that you are in the
-`~/android/lineage/device/{{ device.vendor_short }}/{{ device.codename }}` folder. Then run the `extract-files.sh` script:
+Make use of [`ccache`](https://ccache.samba.org/) if you want to speed up subsequent builds by running:
 
 ```
-./extract-files.sh
+export USE_CCACHE=1
+export CCACHE_EXEC=/usr/bin/ccache
 ```
 
-The blobs should be pulled into the `~/android/lineage/vendor/{{ device.vendor_short }}` folder. If you see "command not found" errors, `adb` may
-need to be placed in `~/bin`.
+and adding that line to your `~/.bashrc` file. Then, specify the maximum amount of disk space you want `ccache` to use by typing this:
 
+```
+ccache -M 50G
+```
+
+where `50G` corresponds to 50GB of cache. This needs to be run once. Anywhere from 25GB-100GB will result in very noticeably increased build speeds
+(for instance, a typical 1hr build time can be reduced to 20min). If you're only building for one device, 25GB-50GB is fine. If you plan to build
+for several devices that do not share the same kernel source, aim for 75GB-100GB. This space will be permanently occupied on your drive, so take this
+into consideration.
+
+You can also enable the optional `ccache` compression. While this may involve a slight performance slowdown, it increases the number of files that fit in the cache. To enable it, run:
+
+```
+ccache -o compression=true
+```
+
+{% include alerts/note.html content="If compression is enabled, the `ccache` size can be lower (aim for approximately 20GB for one device)." %}
 
 ### Start the build
 
@@ -80,15 +197,10 @@ Time to start building! Now, type:
 
 ```
 croot
-brunch {{device.codename}}
+mka bacon -j$(nproc --all)
 ```
 
 The build should begin.
-
-{% capture signing_builds %}
-Want to learn how to sign your own builds? Take a look at [Signing builds]({{ "signing_builds.html" | relative_url }}).
-{% endcapture %}
-{% include alerts/tip.html content=signing_builds %}
 
 ## Install the build
 
@@ -101,11 +213,15 @@ cd $OUT
 There you'll find all the files that were created. The two files of more interest are:
 
 {% if device.is_ab_device %}
-1. `boot.img`, which is the LineageOS boot image, and contains the recovery-ramdisk.
+{% if device.has_recovery_partition %}
+1. `recovery.img`, which is the Kraken recovery image.
 {% else %}
-1. `recovery.img`, which is the LineageOS recovery image.
+1. `boot.img`, which is the Kraken boot image, and contains the recovery-ramdisk.
 {% endif %}
-2. `lineage-{{ device.current_branch }}-{{ site.time | date: "%Y%m%d" }}-UNOFFICIAL-{{ device.codename }}.zip`, which is the LineageOS
+{% else %}
+1. `recovery.img`, which is the Kraken recovery image.
+{% endif %}
+2. A zip file whose name starts with 'Kraken_', which is the Kraken
 installer package.
 
 ### Success! So... what's next?
@@ -115,4 +231,4 @@ hopefully you've learned a bit on the way and had some fun too.
 
 ## To get assistance
 
-* [#LineageOS-dev](https://kiwiirc.com/nextclient/irc.libera.chat#lineageos-dev) - A helpful, real-time chat room (or "channel"), on the Libera.Chat [IRC](https://en.wikipedia.org/wiki/Internet_Relay_Chat) network.
+* [Telegram group](https://t.me/AOSPKChat)

@@ -54,13 +54,13 @@ definitions:
   valid_branches:
     description: Valid branches a device can be on
     enum:
-    - 13.0
-    - 14.1
-    - 15.1
-    - 16.0
-    - 17.1
-    - 18.1
-    type: number
+    - pie
+    - pie_plus
+    - ten
+    - ten_plus
+    - eleven
+    - eleven_plus
+    type: string
   valid_dimension:
     oneOf:
     - "$ref": "#/definitions/dimension_string"
@@ -94,8 +94,6 @@ definitions:
       - Barometer
       - Color spectrum sensor
       - Compass
-      - Depth Sensor
-      - Dot Projector
       - Dual SIM
       - Dual front speakers
       - Dual side NFC
@@ -129,11 +127,11 @@ definitions:
       - Motion Coprocessor
       - Moto Mods
       - NFC
+      - NFC (Redmi Note 9 Pro/Pro Max)
       - Pedometer
       - Proximity sensor
       - Qi wireless charging
       - Qi reverse wireless charging
-      - Radar
       - RGB ambient light
       - SNS integration
       - Sensor hub
@@ -230,6 +228,8 @@ properties:
     - Denver
     - Exynos M1 & Cortex-A53
     - Exynos M3 & Cortex-A55
+    - Helio G90T
+    - Helio P60
     - Intel Atom
     - Krait
     - Krait 200
@@ -268,12 +268,6 @@ properties:
     "$id": "/properties/cpu_freq"
     minLength: 3
     type: string
-  current_branch:
-    "$id": "/properties/current_branch"
-    "$ref": "#/definitions/valid_branches"
-  custom_recovery_codename:
-    "$id": "/properties/custom_recovery_codename"
-    type: string
   custom_recovery_link:
     "$id": "/properties/custom_recovery_link"
     type: string
@@ -296,15 +290,15 @@ properties:
     enum:
     - ARM Mali-400 MP
     - ARM Mali-400 MP4
+    - ARM Mali-G72 MP3
     - ARM Mali-G72 MP12
     - ARM Mali-G72 MP18
-    - ARM Mali-G72 MP3
+    - ARM Mali-G76 MC4
     - ARM Mali-T604
     - ARM Mali-T628 MP6
     - ARM Mali-T720 MP2
     - ARM Mali-T760 MP6
     - ARM Mali-T760 MP8
-    - ARM Mali-T830 MP2
     - ARM Mali-T830 MP3
     - ARM Mali-T880 MP12
     - Adreno 225
@@ -353,23 +347,15 @@ properties:
     - PowerVR SGX544MP2
     - PowerVR Series 6
     - Tegra 4
-  has_recovery_partition:
-    "$id": "/properties/has_recovery_partition"
-    type: boolean
   height:
     "$id": "/properties/height"
     "$ref": "#/definitions/valid_dimension"
-  image:
-    "$id": "/properties/image"
-    pattern: ^\w*\.(png|jpg)$
-    type: string
   install_method:
     "$id": "/properties/install_method"
     enum:
     - dd
     - edl_custom
     - fastboot_custom
-    - fastboot_fairphone
     - fastboot_generic
     - fastboot_htc
     - fastboot_huawei
@@ -377,25 +363,27 @@ properties:
     - fastboot_lg
     - fastboot_motorola
     - fastboot_nexus
-    - fastboot_nokia
     - fastboot_oppo
     - fastboot_sony
     - fastboot_realme
     - fastboot_unlocked
     - fastboot_xiaomi
+    - fastboot_xiaomi_virtual_ab
     - fastboot_zenfone
     - heimdall
     - odin
   is_ab_device:
     "$id": "/properties/is_ab_device"
     type: boolean
+  has_recovery_partition:
+    "$id": "/properties/has_recovery_partition"
+    type: boolean
   is_unlockable:
     "$id": "/properties/is_unlockable"
     type: boolean
-  kernel:
-    "$id": "/properties/kernel"
-    pattern: ^android_kernel(_\w*){2}(-?[\d\.]*)?(-common)?$
-    type: string
+  deprecated:
+    "$id": "/properties/deprecated"
+    type: boolean
   maintainers:
     "$id": "/properties/maintainers"
     minItems: 0
@@ -454,20 +442,8 @@ properties:
     - "$ref": "#/definitions/valid_dimension"
     - enum:
       - None
-  tree:
-    "$id": "/properties/tree"
-    pattern: ^android_device_(.*)$
-    type: string
-  type:
-    "$id": "/properties/type"
-    enum:
-    - Handheld game console
-    - Set top box
-    - phone
-    - phone (slider)
-    - tablet
-  uses_twrp:
-    "$id": "/properties/uses_twrp"
+  uses_custom_recovery:
+    "$id": "/properties/uses_custom_recovery"
     type: boolean
   vendor:
     "$id": "/properties/vendor"
@@ -486,7 +462,6 @@ properties:
     - Lenovo
     - Motorola
     - Nextbit
-    - Nokia
     - Nubia
     - Nvidia
     - OPPO
@@ -495,6 +470,7 @@ properties:
     - Realme
     - Samsung
     - Sony
+    - Teracube
     - Wileyfox
     - Wingtech
     - Xiaomi
@@ -502,40 +478,6 @@ properties:
     - YU
     - ZTE
     - ZUK
-  vendor_short:
-    "$id": "/properties/vendor_short"
-    enum:
-    - ark
-    - asus
-    - bq
-    - essential
-    - fairphone
-    - fxtec
-    - google
-    - htc
-    - huawei
-    - leeco
-    - lenovo
-    - lge
-    - moto
-    - motorola
-    - nextbit
-    - nokia
-    - nubia
-    - nvidia
-    - oneplus
-    - oppo
-    - razer
-    - realme
-    - samsung
-    - sony
-    - wileyfox
-    - wingtech
-    - xiaomi
-    - yandex
-    - yu
-    - zte
-    - zuk
   versions:
     "$id": "/properties/versions"
     items:
@@ -543,9 +485,6 @@ properties:
       "$ref": "#/definitions/valid_branches"
     minItems: 1
     type: array
-  width:
-    "$id": "/properties/width"
-    "$ref": "#/definitions/valid_dimension"
 required:
 - architecture
 - battery
@@ -554,20 +493,14 @@ required:
 - cpu
 - cpu_cores
 - cpu_freq
-- current_branch
 - gpu
-- image
 - install_method
-- kernel
 - maintainers
 - name
 - peripherals
 - release
 - screen
-- tree
-- type
 - vendor
-- vendor_short
 - versions
 title: device
 type: object
